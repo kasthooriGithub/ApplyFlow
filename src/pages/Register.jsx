@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import {
   Box,
   Typography,
@@ -46,9 +47,25 @@ const Register = () => {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, {
+      const user = userCredential.user;
+      
+      await updateProfile(user, {
         displayName: fullName,
       });
+
+      // Create user profile in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        fullName: fullName,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        settings: {
+          theme: "light",
+          notifications: true,
+        }
+      });
+
       navigate("/dashboard");
     } catch (err) {
       console.error(err);

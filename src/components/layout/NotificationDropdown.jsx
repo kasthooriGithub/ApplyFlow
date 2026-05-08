@@ -43,7 +43,22 @@ const NotificationDropdown = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   
   const { applications } = useApplications();
-  const [readIds, setReadIds] = useState(new Set());
+  const [readIds, setReadIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('applyflow_read_notifications');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('applyflow_read_notifications', JSON.stringify(Array.from(readIds)));
+    } catch (e) {
+      console.error('Failed to save read notifications to localStorage', e);
+    }
+  }, [readIds]);
 
   // Generate real-time notifications based on user's applications
   const notifications = useMemo(() => {

@@ -199,7 +199,10 @@ const AppSidebar = ({ open, onClose }) => {
           fullWidth
           variant="contained"
           disableElevation
-          onClick={() => setScheduleModalOpen(true)}
+          onClick={() => {
+            setScheduleModalOpen(true);
+            if (isMobile && onClose) onClose();
+          }}
           startIcon={
             <Box sx={{
               width: 20, height: 20, borderRadius: '50%',

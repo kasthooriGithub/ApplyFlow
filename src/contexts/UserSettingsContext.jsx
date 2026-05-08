@@ -25,10 +25,12 @@ export const UserSettingsProvider = ({ children }) => {
   useEffect(() => {
     let unsubscribe;
     if (user && !authLoading) {
-      const docRef = doc(db, 'user_settings', user.uid);
+      const docRef = doc(db, 'users', user.uid);
       unsubscribe = onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-          setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data() });
+        if (docSnap.exists() && docSnap.data().settings) {
+          setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data().settings });
+        } else if (docSnap.exists()) {
+          setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data() }); // Fallback if settings are at root
         } else {
           setSettings(DEFAULT_SETTINGS); 
         }
@@ -53,8 +55,8 @@ export const UserSettingsProvider = ({ children }) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
     
     try {
-      const docRef = doc(db, 'user_settings', user.uid);
-      await setDoc(docRef, newSettings, { merge: true });
+      const docRef = doc(db, 'users', user.uid);
+      await setDoc(docRef, { settings: newSettings }, { merge: true });
     } catch (error) {
       console.error("Error updating settings: ", error);
     }
